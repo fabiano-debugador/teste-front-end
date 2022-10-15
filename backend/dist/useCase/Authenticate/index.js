@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authenticateController = exports.authenticateUseCase = void 0;
+const DatabaseAuthenticateRepository_1 = require("../../repositories/implementations/DatabaseAuthenticateRepository");
+const AuthenticateController_1 = require("./AuthenticateController");
+const AuthenticateUseCase_1 = require("./AuthenticateUseCase");
+const postgresAuthenticateRepository = new DatabaseAuthenticateRepository_1.DatabaseAuthenticateRepository();
+const authenticateUseCase = new AuthenticateUseCase_1.AuthenticateUseCase(postgresAuthenticateRepository);
+exports.authenticateUseCase = authenticateUseCase;
+const authenticateController = new AuthenticateController_1.AuthenticateController(authenticateUseCase);
+exports.authenticateController = authenticateController;
