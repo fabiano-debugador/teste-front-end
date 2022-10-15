@@ -1,6 +1,6 @@
 export class User {
   public readonly id?: string;
-  public login!: string;
+  public nome!: string;
   public email!: string;
 
   constructor(props: Omit<User, "id">) {
