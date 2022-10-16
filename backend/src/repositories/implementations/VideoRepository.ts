@@ -29,4 +29,22 @@ export class VideoRepository implements IListVideoRepository {
     });
     return { ...nextPageTokenValue, result };
   }
+
+  async details(id: string): Promise<any> {
+    const details = await axios({
+      method: "get",
+      url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&part=snippet,statistics&key=${apiKey}`,
+    });
+
+    const result = details.data.items.map((video: any) => {
+      return {
+        title: video.snippet.title,
+        description: video.snippet.description,
+        views: video.statistics.viewCount,
+        likes: video.statistics.likeCount,
+      };
+    });
+
+    return result;
+  }
 }
