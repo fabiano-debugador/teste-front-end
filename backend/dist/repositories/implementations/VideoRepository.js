@@ -31,28 +31,54 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthenticateUseCase = void 0;
-const jsonwebtoken_1 = require("jsonwebtoken");
+exports.VideoRepository = void 0;
+const axios_1 = __importDefault(require("axios"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const tokenKey = process.env.TOKEN_KEY || "13f3b6cb-3f98-4258-93c7-82878099f1d9";
-class AuthenticateUseCase {
-    constructor(authenticateRepository) {
-        this.authenticateRepository = authenticateRepository;
-    }
-    execute({ name, email }) {
+const apiKey = process.env.API_KEY;
+class VideoRepository {
+    searchVideos(value, pageToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const userExist = yield this.authenticateRepository.verifyLogin(name, email);
-            if (!userExist) {
-                throw new Error("Name or password incorrect");
-            }
-            const token = (0, jsonwebtoken_1.sign)({}, tokenKey, {
-                subject: userExist.id,
-                expiresIn: "36000000s",
+            if (!pageToken)
+                pageToken = "";
+            const listOfVideos = yield (0, axios_1.default)({
+                method: "get",
+                url: ` https://www.googleapis.com/youtube/v3/search?part=id,snippet&q=${value}&key=${apiKey}&maxResults=10&pageToken=${pageToken}`,
             });
-            return { token };
+            const nextPageTokenValue = {
+                nextPageToken: listOfVideos.data.nextPageToken,
+            };
+            const result = listOfVideos.data.items.map((video) => {
+                return {
+                    videoId: video.id.videoId,
+                    title: video.snippet.title,
+                    description: video.snippet.description,
+                    thumbnails: video.snippet.thumbnails,
+                };
+            });
+            return Object.assign(Object.assign({}, nextPageTokenValue), { result });
+        });
+    }
+    details(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const details = yield (0, axios_1.default)({
+                method: "get",
+                url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&part=snippet,statistics&key=${apiKey}`,
+            });
+            const result = details.data.items.map((video) => {
+                return {
+                    title: video.snippet.title,
+                    description: video.snippet.description,
+                    views: video.statistics.viewCount,
+                    likes: video.statistics.likeCount,
+                };
+            });
+            return result;
         });
     }
 }
-exports.AuthenticateUseCase = AuthenticateUseCase;
+exports.VideoRepository = VideoRepository;
